@@ -7,7 +7,9 @@ import Fluent
 public func routes(_ router: Router) throws {
     
    let gamesController = GamesController()
+    let userController = UsersController()
     try router.register(collection: gamesController)
+    try router.register(collection: userController)
     //add game
     /*router.post("api", "games") { req -> Future<Game> in
         return try req.content.decode(Game.self)

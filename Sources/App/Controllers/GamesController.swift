@@ -4,7 +4,7 @@ import Fluent
 struct GamesController: RouteCollection {
     func boot(router: Router) throws {
         let gamesRoutes = router.grouped("api", "games")
-        gamesRoutes.post(Game.self,use: addGame)
+        gamesRoutes.post(Game.self, use: addGame)
         gamesRoutes.get(use: getAllHandler)
         gamesRoutes.get(Game.parameter, use: getGamesByID)
         gamesRoutes.put(Game.parameter, use: updateGameById)
@@ -12,13 +12,11 @@ struct GamesController: RouteCollection {
         gamesRoutes.get("search", use: searchGame)
         gamesRoutes.get("first", use: firstGame)
         gamesRoutes.get("sorted", use: sortedGame)
+        gamesRoutes.get(Game.parameter, "user", use: getUserHandler)
     }
     
-    func addGame(_ req: Request) throws -> Future<Game> {
-        return try req.content.decode(Game.self)
-            .flatMap(to:Game.self){ game in
-                return game.save(on: req)
-        }
+    func addGame(_ req: Request, game: Game) throws -> Future<Game> {
+        return game.save(on: req)
     }
     
     func getAllHandler(_ req: Request) throws -> Future<[Game]> {
@@ -34,6 +32,7 @@ struct GamesController: RouteCollection {
                             game, updateGame in
                             game.name = updateGame.name
                             game.producer = updateGame.producer
+                            game.userID = updateGame.userID
                             return game.save(on: req)
         }
     }
@@ -67,5 +66,11 @@ struct GamesController: RouteCollection {
         return try Game.query(on: req)
         .sort(\.name, .ascending)
         .all()
+    }
+    func getUserHandler(_ req: Request) throws -> Future<User> {
+        return try req.parameter(Game.self)
+            .flatMap(to: User.self) { game in
+                try game.user.get(on: req)
+        }
     }
 }

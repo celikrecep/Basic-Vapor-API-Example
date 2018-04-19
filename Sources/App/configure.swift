@@ -41,6 +41,7 @@ public func configure(
 
     /// Configure migrations
     var migrations = MigrationConfig()
+    migrations.add(model: User.self, database: .sqlite)
     migrations.add(model: Game.self, database: .sqlite)
     services.register(migrations)
 
